@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Sunthesizer:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Sunthesizer_jar</output-path>
+    <root id="archive" name="Sunthesizer.jar">
+      <element id="module-output" name="Sunthesizer" />
+      <element id="extracted-dir" path="$USER_HOME$/Downloads/javaosc 2/lib/javaoscfull.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
