@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class OSCTranslater {
     private OSCPortIn oscIn;
     private OSCPortOut oscOut;
-    private AudioFormat af = new AudioFormat((float)44100, 8, 1, true, true);// = new AudioFormat(44100,8,1,true,false); //new AudioFormat((float)44100, 8, 1, true, false);
+    private AudioFormat af = new AudioFormat((float)32000, 8, 1, true, true);// = new AudioFormat(44100,8,1,true,false); //new AudioFormat((float)44100, 8, 1, true, false);
     DataLine.Info info;
     private LinkedBlockingQueue<Byte> internal_buffer = new LinkedBlockingQueue<Byte>(256);
     SourceDataLine sdl;
@@ -140,9 +140,9 @@ public class OSCTranslater {
                     }
 
                     for (int i = 0; i < buffersize; i++) {
-                        double angle = (2.0 * Math.PI * 2 * tmp * time)/44100;
-                        //System.out.println(buffer[i]);
+                        double angle = (2.0 * Math.PI * 2 * tmp * time)/32000;
                         try {
+                            System.out.println((byte) (Math.sin(angle) * 100));
                             internal_buffer.offer((byte) (Math.sin(angle) * 100), 1, TimeUnit.MICROSECONDS);
                         } catch (Exception e){
                             e.printStackTrace();
