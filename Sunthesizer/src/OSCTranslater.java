@@ -9,28 +9,33 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.SourceDataLine;
 import java.net.InetAddress;
+import java.security.spec.ECField;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by brorbw on 09/04/16.
  */
 public class OSCTranslater {
-
     private OSCPortIn oscIn;
     private OSCPortOut oscOut;
     private AudioFormat af = new AudioFormat((float)44100, 8, 1, true, true);// = new AudioFormat(44100,8,1,true,false); //new AudioFormat((float)44100, 8, 1, true, false);
     DataLine.Info info;
-
+    private LinkedBlockingQueue<Byte> internal_buffer = new LinkedBlockingQueue<Byte>(256);
     SourceDataLine sdl;
     private int buffersize;
-    private byte[] buffer;
     private float alpha, beta, delta, gamma, theta;
     private float toSumAlpha, toSumBeta, toSumtheta;
     private double time = 1;
     private float out;
+    private float tmp;
+    private int oldDetect;
+    private float amp = 0;
     private boolean isInterrupted;
     public static void main(String ... args){
         OSCTranslater mt = new OSCTranslater(1);
@@ -38,7 +43,6 @@ public class OSCTranslater {
 
     }
     public OSCTranslater(int buffersize){
-        buffer = new byte[buffersize];
         this.buffersize = buffersize;
     }
     public void init(int outport){
@@ -105,20 +109,53 @@ public class OSCTranslater {
             @Override
             public void run() {
                 while(!isInterrupted) {
-                    //buffer[0] = (byte) toSumBeta; //(toSumAlpha/3+toSumBeta/3+toSumtheta/3);
-                    //System.out.println(buffer[0]);
-                    for(int i = 0; i < buffersize; i++) {
-                        double angle = time / ((float) 44100 / (alpha*3000)) * 2.0 * Math.PI;
-                        buffer[i] = (byte) (Math.sin(angle) * 100);
-                        System.out.println(buffer[i]);
-                        time++;
+                    try {
+                        byte[] tmp = {(byte) internal_buffer.take()};
+                        sdl.write(tmp, 0,buffersize);
+                    } catch (Exception e){
+                        e.printStackTrace();
                     }
-                    sdl.write(buffer, 0,buffersize);
+
                 }
             }
         });
         output.start();
+        Thread input = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(!isInterrupted) {
+                    //buffer[0] = (byte) toSumBeta; //(toSumAlpha/3+toSumBeta/3+toSumtheta/3);
+                    //System.out.println(buffer[0]);
+                    float tmp = alpha*3000;
+                    int detect = (int) tmp;
+                    if(detect != oldDetect) {
+                        //amp = 1;
+                        oldDetect = detect;
+                        //time = 0;
+                        sdl.flush();
+                        //sdl.drain();
+                    }
+                    if(amp <= 100) {
+                        amp = amp * 1.01f;
+                    }
+
+                    for (int i = 0; i < buffersize; i++) {
+                        double angle = (2.0 * Math.PI * 2 * tmp * time)/44100;
+                        //System.out.println(buffer[i]);
+                        try {
+                            internal_buffer.offer((byte) (Math.sin(angle) * 100), 1, TimeUnit.MICROSECONDS);
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
+                        time++;
+                    }
+
+                }
+            }
+        });
+        input.start();
     }
+
 
     public float merge(float p1, float p2, float p3, float p4) {
         if(!Float.isNaN(p1)){
