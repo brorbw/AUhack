@@ -1,3 +1,5 @@
+package org.midimind.osc;
+
 import com.illposed.osc.OSCListener;
 import com.illposed.osc.OSCMessage;
 import com.illposed.osc.OSCPortIn;
@@ -18,11 +20,11 @@ public class OSC2midi {
         mt.init(5030);
 
     }
-    public void init(int outport){
-        try{
+    public void init(int outport) {
+        try {
             oscIn = new OSCPortIn(5001);
-            oscOut = new OSCPortOut(InetAddress.getLocalHost(),outport);
-        } catch (Exception e){
+            oscOut = new OSCPortOut(InetAddress.getLocalHost(), outport);
+        } catch (Exception e) {
             e.printStackTrace();
         }
         oscIn.addListener("/muse/elements/alpha_relative", new OSCListener() {
@@ -64,28 +66,7 @@ public class OSC2midi {
             }
         });
         oscIn.startListening();
-        //Thread myT = new MyThread();
-        //myT.start();
     }
-    /*private class MyThread extends Thread{
-        @Override
-        public void run(){
-            super.run();
-            while (true){
-                if(onOff == 1){
-                    onOff = 0;
-                } else {
-                    onOff = 1;
-                }
-                try {
-                    sleep(1000);
-                } catch (Exception e){
-                    e.printStackTrace();
-                }
-                doOnSend(onOff, "onOff");
-            }
-        }
-    }*/
     public void noteOnOfSend() {
         if (null == oscOut) {
             System.out.println("No Connection");
@@ -120,7 +101,7 @@ public class OSC2midi {
     }
     public int checkValuea(float old, float news){
         float tmp = Math.abs(old-news);
-        System.out.println(tmp);
+        //System.out.println(tmp);
         if(tmp > 1){
             oldAlpha = news;
             return 0;
@@ -129,7 +110,7 @@ public class OSC2midi {
     }
     public int checkValueb(float old, float news){
         float tmp = Math.abs(old-news);
-        System.out.println(tmp);
+        //System.out.println(tmp);
         if(tmp > 1){
             oldBeta = news;
             return 1;
@@ -138,7 +119,7 @@ public class OSC2midi {
     }
     public int checkValuec(float old, float news){
         float tmp = Math.abs(old-news);
-        System.out.println(tmp);
+        //System.out.println(tmp);
         if(tmp > 1){
             oldDelta = news;
             return 1;
@@ -147,7 +128,7 @@ public class OSC2midi {
     }
     public int checkValued(float old, float news){
         float tmp = Math.abs(old-news);
-        System.out.println(tmp);
+        //System.out.println(tmp);
         if(tmp > 1){
             oldGamma = news;
             return 1;
@@ -171,7 +152,7 @@ public class OSC2midi {
         Object[] args = new Object[2];
         args[0] = number;
         args[1] = number;
-        OSCMessage msg = new OSCMessage("musicinmyhead/"+waveName, args);
+        OSCMessage msg = new OSCMessage("MIDImind/"+waveName, args);
         try {
             oscOut.send(msg);
         } catch (Exception e){
