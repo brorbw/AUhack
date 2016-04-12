@@ -152,7 +152,7 @@ public class OSC2midi {
         Object[] args = new Object[2];
         args[0] = number;
         args[1] = number;
-        OSCMessage msg = new OSCMessage("MIDImind/"+waveName, args);
+        OSCMessage msg = new OSCMessage("musicinmyhead/"+waveName, args);
         try {
             oscOut.send(msg);
         } catch (Exception e){
